@@ -3,37 +3,34 @@ name: Build and Deploy Docusaurus
 on:
   push:
     branches:
-      - main  # run on push to main
+      - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
 
     steps:
-      # 1. Checkout repo
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # 1. Checkout code
+      - uses: actions/checkout@v3
 
       # 2. Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '20'  # match your local Node.js
+          node-version: '20'
 
       # 3. Install dependencies
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
       # 4. Build Docusaurus site
-      - name: Build site
-        run: npm run build
+      - run: npm run build
 
-      # 5. Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      # 5. Upload build as artifact for Pages
+      - uses: actions/upload-pages-artifact@v1
         with:
-          branch: gh-pages  # deploy to gh-pages branch
+          path: build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v4
